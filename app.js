@@ -1,3 +1,4 @@
+const PORT = process.env.PORT || 3000;
 // Importing modules
 // Express JS
 const express = require('express');
@@ -25,4 +26,4 @@ app.use(productsRoutes);
 
 // app.use(errorController.get404); 
 
-app.listen(3000);
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
