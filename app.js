@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 // Path
 const path = require('path');
 
-const productsRoutes = require('./routers/products');
+const pokemonRoutes = require('./routers/pokemon');
 // const errorController = require('./controllers/error');
 
 // Creating a express application
@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Calling the router object
-app.use(productsRoutes);
+app.use(pokemonRoutes);
 
 // app.use(errorController.get404); 
 
