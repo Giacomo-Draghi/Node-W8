@@ -8,11 +8,12 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const pokemonRoutes = require('./routers/pokemon');
+const pr10Rout = require('./routers/pr10-rout');
 // const errorController = require('./controllers/error');
 
 // Creating a express application
 const app = express();
-
+app.use(bodyParser.json())
 app.set('view engine', 'ejs');
 app.set('views','views');
 
@@ -23,6 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Calling the router object
 app.use(pokemonRoutes);
+app.use(pr10Rout);
 
 // app.use(errorController.get404); 
 

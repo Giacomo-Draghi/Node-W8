@@ -14,7 +14,7 @@ router.get('/', (req, res, next) => {
       jsonEngine.getPokemon(page, (pokemon) => {
               res.render('pokemon', {
                   pageTitle: 'Pokedex',
-                  path: '',
+                  path: '/pockemon',
                   pokemonList: pokemon,
                   page: page
               });

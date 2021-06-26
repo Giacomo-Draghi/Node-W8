@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        <%= pageTitle %>
+    </title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <nav class="main-header__nav">
+            <ul class="main-header__item-list">
+                <li class="main-header__item">
+                    <a class="<%= path === '/home' ? 'active' : '' %>" href="/">Shop</a>
+                    <a class="<%= path === '/pockemon' ? 'active' : '' %>" href="/pokemon/1">Pockemon</a>
+                    <a class="<%= path === '/pr10' ? 'active' : '' %>" href="/pr10">Pr10</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; padding: 10px;">
+        <div>
+            <h1>Names:</h1>
+            <ul id="nameList" class="">
+            </ul>
+        </div>
+        <div>
+            <h1>Powers:</h1>
+            <ul id="powersList" class="">
+            </ul>
+        </div>
+        <div>
+            <h2>Submit a name</h2>
+            <div class="actions_container">
+                <input type="text" id="newName" placeholder="Name">
+                <input type="text" id="newPower" placeholder="Power">
+                <button id="submitName" onclick="submitName()">Submit</button>
+            </div>
+        </div>
+
+    </div>
+    <!--NOTE: Declare script here.
+    Entire HTML page should be allowed to load
+    before executing javascript.-->
+    <script>
+        const populateList = () => {
+            const nameList = document.getElementById('nameList');
+            const powersList = document.getElementById('powersList');
+
+            fetch('/fetchAll')
+                .then(res => res.json())
+                .then(data => {
+                    // Clear the list first
+                    while (nameList.firstChild) nameList.firstChild.remove()
+
+                    // Repopulate the list
+                    for (const avenger of data.avengers) {
+                        const li = document.createElement('li')
+                        li.appendChild(document.createTextNode(avenger.name))
+                        nameList.appendChild(li)
+                    }
+
+                    while (powersList.firstChild) powersList.firstChild.remove()
+
+                    // Repopulate the list
+                    for (const avenger of data.avengers) {
+                        const li = document.createElement('li')
+                        li.appendChild(document.createTextNode(avenger.power))
+                        powersList.appendChild(li)
+                    }
+                })
+                .catch(err => {
+                    console.error(err)
+                })
+        }
+
+        const submitName = () => {
+            const newName = document.getElementById('newName').value // Grab the value of our new name
+            const newPower = document.getElementById('newPower').value
+
+            fetch('/insertName', {
+                method: 'POST', // Send a POST request
+                headers: {
+                    // Set the Content-Type, since our server expects JSON
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ newName, newPower})
+            })
+                .then(res => {
+                    // Clear the input
+                    document.getElementById('newName').value = ''
+                    document.getElementById('newPower').value = ''
+
+                    // Repopulate the list with our new name added
+                    populateList()
+                })
+                .catch(err => {
+                    // Clear the input
+                    document.getElementById('newName').value = ''
+                    document.getElementById('newPower').value = ''
+                    console.error(err)
+                })
+        }
+
+        // Initialize the list
+        populateList()
+
+    </script>
+</body>
+
+</html>
