@@ -13,6 +13,16 @@ const pr10Rout = require('./routers/pr10-rout');
 
 // Creating a express application
 const app = express();
+const io = require('socket.io')(PORT);
+
+io.on('connection', (socket) => {
+  console.log('Client connected');
+
+  socket.on('new-name', () => {
+    // Someone added a name! Tell everyone else to update the list.
+    socket.broadcast.emit('update-list');
+  });
+});
 app.use(bodyParser.json())
 app.set('view engine', 'ejs');
 app.set('views','views');
