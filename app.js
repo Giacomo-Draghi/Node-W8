@@ -1,41 +1,60 @@
-const PORT = process.env.PORT || 3000;
-// Importing modules
-// Express JS
-const express = require('express');
-// Body parser
-const bodyParser = require('body-parser');
-// Path
-const path = require('path');
+// If you downloaded this code, make sure you run `npm install`
+// before trying to start the app.
+const path = require('path')
+const express = require('express')
+const bodyParser = require('body-parser')
+const session = require('express-session')
 
-const pokemonRoutes = require('./routers/pokemon');
-const pr10Rout = require('./routers/pr10-rout');
-// const errorController = require('./controllers/error');
+const PORT = process.env.PORT || 3000 // So we can run on heroku || (OR) localhost:5000
 
-// Creating a express application
-const app = express();
-const io = require('socket.io')(PORT);
+const app = express()
 
-io.on('connection', (socket) => {
-  console.log('Client connected');
+const liveChat = require('./routes/liveChat')
 
-  socket.on('new-name', () => {
-    // Someone added a name! Tell everyone else to update the list.
-    socket.broadcast.emit('update-list');
-  });
-});
-app.use(bodyParser.json())
-app.set('view engine', 'ejs');
-app.set('views','views');
+app.set('view engine', 'ejs')
+    .set('views', 'views')
+    .use(express.json())
+    .use(bodyParser.urlencoded({ extended: true }))
+    .use(express.static(path.join(__dirname, 'public')))
+    .use(
+        session({
+            // Simple and not very secure session
+            secret: 'random_text',
+            cookie: {
+                httpOnly: false // Permit access to client session
+            }
+        })
+    )
+    .use('/', liveChat)
 
-// Working with the middleware
-// parsing 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static(path.join(__dirname, 'public')));
+const server = app.listen(PORT, () => console.log(`Listening on ${PORT}`))
 
-// Calling the router object
-app.use(pokemonRoutes);
-app.use(pr10Rout);
+const io = require('socket.io')(server)
+io.on('connection', socket => {
+    console.log('Client connected!')
 
-// app.use(errorController.get404); 
-
-app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+    socket
+        .on('disconnect', () => {
+            console.log('A client disconnected!')
+        })
+        .on('newUser', (username, time) => {
+            // A new user logs in.
+            const message = `${username} has logged on.`
+            // Tell other users someone has logged on.
+            socket.broadcast.emit('newMessage', {
+                message,
+                time,
+                from: 'admin'
+            })
+        })
+        .on('message', data => {
+            // Receive a new message
+            console.log('Message received')
+            console.log(data)
+            // This one is simple. Just broadcast the data we received.
+            // We can use { ...data } to copy the data object.
+            socket.broadcast.emit('newMessage', {
+                ...data
+            }) // Note, only emits to all OTHER clients, not sender.
+        })
+})
